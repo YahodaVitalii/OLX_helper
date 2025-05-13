@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  username    String       @unique
+  name        String
+  password    String       @unique
+  phoneNumber String       @map("phone_number")
+  city        String
+  products    Product[]
+  olxSettings OLXSettings?
+
+  @@map("users")
+}
+
+model OLXSettings {
+  id             Int            @id @default(autoincrement())
+  User           User           @relation(fields: [userId], references: [id])
+  userId         Int            @unique @map("user_id")
+  negotiable     Boolean        @default(true)
+  trade          Boolean        @default(false)
+  budget         Boolean        @default(false)
+  advertiserType AdvertiserType @default(private)
+
+  @@map("olx_settings")
+}
+
+enum AdvertiserType {
+  private
+  business
+}
+
+model Product {
+  id             Int             @id @default(autoincrement())
+  name           String
+  categoryId     Int             @map("category_id")
+  images         Image[]
+  status         ProductStatus   @default(IN_STOCK)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  User           User?           @relation(fields: [userId], references: [id])
+  userId         Int?
+  ProductAdvert  ProductAdvert?
+  ProductFinance ProductFinance?
+  ProductDetails ProductDetails?
+  type           ProductType     @default(GENERAL)
+  Laptop         Laptop?
+
+  @@map("products")
+}
+
+enum ProductType {
+  GENERAL
+  LAPTOP
+}
+
+model ProductAdvert {
+  id          Int     @id @default(autoincrement())
+  Product     Product @relation(fields: [productId], references: [id])
+  productId   Int     @unique @map("product_id")
+  olxId       Int?    @unique @map("olx_id")
+  title       String
+  description String
+
+  @@map("product_adverts")
+}
+
+model ProductDetails {
+  id                  Int     @id @default(autoincrement())
+  Product             Product @relation(fields: [productId], references: [id])
+  productId           Int     @unique @map("product_id")
+  summary             String?
+  features            String?
+  disadvantages       String?
+  includedAccessories String? @map("included_accessories")
+
+  @@map("product_details")
+}
+
+model Image {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int     @map("product_id")
+  url       String
+
+  @@map("images")
+}
+
+enum ProductStatus {
+  IN_STOCK
+  ACTIVE
+  PENDING_DELIVERY
+  IN_TRANSIT
+  AT_BRANCH
+  SOLD
+  LIMITED
+  REMOVED_BY_USER
+  OUTDATED
+  UNCONFIRMED
+  UNPAID
+  MODERATED
+  BLOCKED
+  DISABLED
+  REMOVED_BY_MODERATOR
+}
+
+model ProductFinance {
+  id              Int      @id @default(autoincrement())
+  Product         Product  @relation(fields: [productId], references: [id])
+  productId       Int      @unique @map("product_id")
+  purchasePrice   Decimal  @map("purchase_price")
+  sellingPrice    Decimal  @map("selling_price")
+  additionalCosts Decimal  @map("additional_costs")
+  profit          Decimal
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("product_finances")
+}
+
+model Laptop {
+  id                 Int           @id @default(autoincrement())
+  productId          Int           @unique @map("product_id")
+  product            Product       @relation(fields: [productId], references: [id])
+  brand              String
+  subBrand           String?       @map("sub_brand")
+  model              String
+  screenExpansion    String?       @map("screen_expansion")
+  screenSize         Float         @map("screen_size")
+  screenRefereshRate Int           @map("screen_referesh_rate")
+  batteryStatus      BatteryStatus @map("battery_status")
+  batteryWear        Float         @map("battery_wear")
+  isGamer            Boolean       @map("is_gamer")
+  processor          String
+  processorModel     String        @map("processor_model")
+  ramSize            Int           @map("ram_size")
+  graphicCard        String        @map("graphic_card")
+  chargerCompletion  Boolean?      @map("charger_completion")
+  hardDrive          String        @map("hard_drive")
+
+  @@map("laptops")
+}
+
+enum BatteryStatus {
+  Working
+  Not_Working
+  Apsent
+}
