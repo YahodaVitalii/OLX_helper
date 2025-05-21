@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule } from '@nestjs/swagger';
 import config from './swagger/config';
 import { ValidationPipe } from '@nestjs/common';
+import { PrismaClientExceptionFilter } from './exception/prisma-client-exception/prisma-client-exception.filter';
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
 
@@ -11,7 +12,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/api/docs', app, document);
-
+  app.useGlobalFilters(new PrismaClientExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

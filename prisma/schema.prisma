@@ -23,7 +23,7 @@ model User {
 
 model OLXSettings {
   id             Int            @id @default(autoincrement())
-  User           User           @relation(fields: [userId], references: [id])
+  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int            @unique @map("user_id")
   negotiable     Boolean        @default(true)
   trade          Boolean        @default(false)
@@ -46,7 +46,7 @@ model Product {
   status         ProductStatus   @default(IN_STOCK)
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
-  User           User?           @relation(fields: [userId], references: [id])
+  User           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         Int?
   ProductAdvert  ProductAdvert?
   ProductFinance ProductFinance?
@@ -75,7 +75,7 @@ model ProductAdvert {
 
 model ProductDetails {
   id                  Int     @id @default(autoincrement())
-  Product             Product @relation(fields: [productId], references: [id])
+  Product             Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId           Int     @unique @map("product_id")
   summary             String?
   features            String?
@@ -87,7 +87,7 @@ model ProductDetails {
 
 model Image {
   id        Int     @id @default(autoincrement())
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int     @map("product_id")
   url       String
 
@@ -129,7 +129,7 @@ model ProductFinance {
 model Laptop {
   id                 Int           @id @default(autoincrement())
   productId          Int           @unique @map("product_id")
-  product            Product       @relation(fields: [productId], references: [id])
+  product            Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   brand              String
   subBrand           String?       @map("sub_brand")
   model              String
