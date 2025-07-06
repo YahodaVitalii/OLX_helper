@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsBoolean,
 } from 'class-validator';
+import { BatteryStatus } from '@prisma/client';
 
 export class CreateLaptopDto {
   @ApiProperty({ description: 'Brand of the laptop', example: 'Dell' })
@@ -22,10 +23,7 @@ export class CreateLaptopDto {
   @IsString()
   subBrand?: string;
 
-  @ApiProperty({
-    description: 'Model of the laptop',
-    example: 'e3000',
-  })
+  @ApiProperty({ description: 'Model of the laptop', example: 'e3000' })
   @IsNotEmpty()
   @IsString()
   model: string;
@@ -44,46 +42,64 @@ export class CreateLaptopDto {
   @IsNumber()
   screenSize: number;
 
-  @ApiProperty({ description: 'Screen refresh rate in Hz', example: 60 })
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Screen refresh rate in Hz',
+    example: 60,
+    required: false,
+  })
+  @IsOptional()
   @IsNumber()
-  screenRefereshRate: number;
+  screenRefreshRate?: number;
 
   @ApiProperty({
     description: 'Battery status of the laptop',
     example: 'Working',
+    required: false,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  batteryStatus: string;
+  batteryStatus?: BatteryStatus;
 
-  @ApiProperty({ description: 'Battery wear percentage', example: 10 })
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Battery wear percentage',
+    example: 10,
+    required: false,
+  })
+  @IsOptional()
   @IsNumber()
-  batteryWear: number;
+  batteryWear?: number;
 
-  @ApiProperty({ description: 'Processor type', example: 'Intel' })
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Processor type',
+    example: 'Intel',
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  processor: string;
+  processor?: string;
 
-  @ApiProperty({ description: 'Processor model', example: 'Core i7-1165G7' })
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Processor model',
+    example: 'Core i7-1165G7',
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  processorModel: string;
+  processorModel?: string;
 
-  @ApiProperty({ description: 'RAM size in GB', example: 16 })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'RAM size in GB', example: 16, required: false })
+  @IsOptional()
   @IsNumber()
-  ramSize: number;
+  ramSize?: number;
 
   @ApiProperty({
     description: 'Graphic card details',
     example: 'NVIDIA GeForce GTX 1650',
+    required: false,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  graphicCard: string;
+  graphicCard?: string;
 
   @ApiProperty({
     description: 'Whether the laptop includes a charger',
@@ -94,8 +110,28 @@ export class CreateLaptopDto {
   @IsBoolean()
   chargerCompletion?: boolean;
 
-  @ApiProperty({ description: 'Hard drive details', example: '512GB SSD' })
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Hard drive details',
+    example: '512GB SSD',
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  hardDrive: string;
+  hardDrive?: string;
+
+  @ApiProperty({
+    description: 'Indicates if this is a gaming laptop',
+    example: false,
+  })
+  @IsNotEmpty()
+  @IsBoolean()
+  isGamer: boolean;
+
+  // @ApiProperty({
+  //   description: 'Product ID associated with this laptop',
+  //   example: 123,
+  // })
+  // @IsNotEmpty()
+  // @IsNumber()
+  // productId: number;
 }

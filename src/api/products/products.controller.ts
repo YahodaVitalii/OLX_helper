@@ -10,6 +10,7 @@ import {
   UseGuards,
   Query,
   Patch,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -123,9 +124,8 @@ export class ProductsController {
   })
   remove(
     @Param('id') id: string,
-    @Query('deleteAdvert') deleteAdvert?: string,
+    @Query('deleteAdvert', ParseBoolPipe) deleteAdvert?: boolean,
   ) {
-    const shouldDeleteAdvert = deleteAdvert === 'true';
-    return this.productsService.remove(+id, shouldDeleteAdvert);
+    return this.productsService.delete(+id, deleteAdvert as boolean);
   }
 }

@@ -51,24 +51,25 @@ model Product {
   ProductAdvert  ProductAdvert?
   ProductFinance ProductFinance?
   ProductDetails ProductDetails?
-  type           ProductType     @default(GENERAL)
+  type           ProductType     @default(OTHER)
   Laptop         Laptop?
 
   @@map("products")
 }
 
 enum ProductType {
-  GENERAL
+  OTHER
   LAPTOP
 }
 
 model ProductAdvert {
-  id          Int     @id @default(autoincrement())
-  Product     Product @relation(fields: [productId], references: [id])
-  productId   Int     @unique @map("product_id")
-  olxId       Int?    @unique @map("olx_id")
-  title       String
-  description String
+  id                     Int     @id @default(autoincrement())
+  Product                Product @relation(fields: [productId], references: [id])
+  productId              Int     @unique @map("product_id")
+  olxId                  Int?    @unique @map("olx_id")
+  title                  String
+  description            String
+  isDescriptionGenerated Boolean @default(true) @map("is_description_generated")
 
   @@map("product_adverts")
 }
@@ -77,7 +78,7 @@ model ProductDetails {
   id                  Int     @id @default(autoincrement())
   Product             Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId           Int     @unique @map("product_id")
-  summary             String?
+  characteristics     String?
   features            String?
   disadvantages       String?
   includedAccessories String? @map("included_accessories")
@@ -127,24 +128,24 @@ model ProductFinance {
 }
 
 model Laptop {
-  id                 Int           @id @default(autoincrement())
-  productId          Int           @unique @map("product_id")
-  product            Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  brand              String
-  subBrand           String?       @map("sub_brand")
-  model              String
-  screenExpansion    String?       @map("screen_expansion")
-  screenSize         Float         @map("screen_size")
-  screenRefereshRate Int           @map("screen_referesh_rate")
-  batteryStatus      BatteryStatus @map("battery_status")
-  batteryWear        Float         @map("battery_wear")
-  isGamer            Boolean       @map("is_gamer")
-  processor          String
-  processorModel     String        @map("processor_model")
-  ramSize            Int           @map("ram_size")
-  graphicCard        String        @map("graphic_card")
-  chargerCompletion  Boolean?      @map("charger_completion")
-  hardDrive          String        @map("hard_drive")
+  id                Int            @id @default(autoincrement())
+  productId         Int            @unique @map("product_id")
+  product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  brand             String
+  subBrand          String?        @map("sub_brand")
+  model             String
+  screenExpansion   String?        @map("screen_expansion")
+  screenSize        Float          @map("screen_size")
+  screenRefreshRate Int?           @map("screen_referesh_rate")
+  batteryStatus     BatteryStatus? @map("battery_status")
+  batteryWear       Float?         @map("battery_wear")
+  isGamer           Boolean        @map("is_gamer")
+  processor         String?
+  processorModel    String?        @map("processor_model")
+  ramSize           Int?           @map("ram_size")
+  graphicCard       String?        @map("graphic_card")
+  chargerCompletion Boolean?       @map("charger_completion")
+  hardDrive         String?        @map("hard_drive")
 
   @@map("laptops")
 }
@@ -152,5 +153,5 @@ model Laptop {
 enum BatteryStatus {
   Working
   Not_Working
-  Apsent
+  Absent
 }

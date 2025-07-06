@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product, ProductStatus, ProductType } from '@prisma/client';
 import { PrismaService } from '../../prisma.service';
+import { ExtendedProduct } from './product.type';
 
 @Injectable()
 export class ProductRepository {
@@ -39,29 +40,37 @@ export class ProductRepository {
 
     return !!product;
   }
-  async findAllByUserId(userId: number): Promise<Product[]> {
+  async findAllByUserId(userId: number): Promise<ExtendedProduct[]> {
     return this.prisma.product.findMany({
       where: {
         userId,
+        Laptop: {
+          isNot: null,
+        },
       },
       include: {
         ProductAdvert: true,
         ProductDetails: true,
         ProductFinance: true,
+        Laptop: true,
         images: true,
       },
     });
   }
 
-  async findOneByIdAndUserId(id: number): Promise<Product> {
+  async findOneById(id: number): Promise<ExtendedProduct> {
     const product = await this.prisma.product.findFirst({
       where: {
         id,
+        Laptop: {
+          isNot: null,
+        },
       },
       include: {
         ProductAdvert: true,
         ProductDetails: true,
         ProductFinance: true,
+        Laptop: true,
         images: true,
       },
     });
@@ -72,10 +81,15 @@ export class ProductRepository {
 
     return product;
   }
-  async update(id: number, productData: Partial<Product>): Promise<void> {
+  async update(id: number, data: Partial<Product>): Promise<void> {
     await this.prisma.product.update({
       where: { id },
-      data: productData,
+      data: {
+        name: data.name,
+        categoryId: data.categoryId,
+        status: data.status,
+        type: data.type,
+      },
     });
   }
   async delete(id: number): Promise<void> {

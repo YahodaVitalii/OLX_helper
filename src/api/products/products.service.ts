@@ -4,21 +4,24 @@ import { ProductAdvertService } from './adverts/product-adverts.service';
 import { ProductFinancesService } from './finances/product-finances.service';
 import { ProductDetailsService } from './details/product-details.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { Product, ProductStatus } from '@prisma/client';
+import { ProductStatus, ProductType } from '@prisma/client';
 import { ProductImagesService } from './images/product-images.service';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductServiceFactory } from './product.factory';
+import { ExtendedProduct } from './product.type';
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly productRepository: ProductRepository,
+    private readonly productServiceFactory: ProductServiceFactory,
     private readonly productAdvertService: ProductAdvertService,
     private readonly productFinanceService: ProductFinancesService,
     private readonly productDetailsService: ProductDetailsService,
     private readonly productImagesService: ProductImagesService,
   ) {}
 
-  async create(ProductDto: CreateProductDto): Promise<Product> {
+  async create(ProductDto: CreateProductDto): Promise<ExtendedProduct> {
     const {
       ProductAdvert,
       ProductDetails,
@@ -51,19 +54,20 @@ export class ProductService {
       await this.productImagesService.addImages(product.id, images);
     }
 
-    // if (Laptop) {
-    //   await this.laptopService.create(product.id, Laptop);
-    // }
+    if (productData.type !== ProductType.OTHER) {
+      const handler = this.productServiceFactory.getHandler(productData.type);
+      await handler.create(product.id, ProductDto);
+    }
 
     return this.findOne(product.id);
   }
 
-  async findAll(userId: number): Promise<Product[]> {
+  async findAll(userId: number): Promise<ExtendedProduct[]> {
     return this.productRepository.findAllByUserId(userId);
   }
 
-  async findOne(id: number): Promise<Product> {
-    const product = await this.productRepository.findOneByIdAndUserId(id);
+  async findOne(id: number): Promise<ExtendedProduct> {
+    const product = await this.productRepository.findOneById(id);
 
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
@@ -75,7 +79,7 @@ export class ProductService {
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
+  ): Promise<ExtendedProduct> {
     const { ProductAdvert, ProductDetails, ProductFinance, ...productData } =
       updateProductDto;
 
@@ -102,10 +106,15 @@ export class ProductService {
       );
     }
 
+    if (productData.type !== ProductType.OTHER) {
+      const handler = this.productServiceFactory.getHandler(productData.type);
+      await handler.update(id, updateProductDto);
+    }
+
     return this.findOne(id);
   }
 
-  remove(id: number, deleteAdvert: boolean) {
+  delete(id: number, deleteAdvert?: boolean) {
     return this.productRepository.delete(id);
   }
 

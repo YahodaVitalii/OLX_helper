@@ -7,15 +7,23 @@ import { ProductDetailsModule } from './details/product-details.module';
 import { PrismaService } from '../../prisma.service';
 import { ProductImagesModule } from './images/product-images.module';
 import { ProductRepository } from './products.repository';
+import { ProductServiceFactory } from './product.factory';
+import { LaptopsModule } from './product-types/laptops/laptops.module';
 
 @Module({
   controllers: [ProductsController],
-  providers: [ProductService, PrismaService, ProductRepository],
+  providers: [
+    ProductService,
+    PrismaService,
+    ProductRepository,
+    ProductServiceFactory,
+  ],
   imports: [
     ProductFinancesModule,
     ProductAdvertsModule,
     ProductDetailsModule,
     ProductImagesModule,
+    LaptopsModule,
   ],
 })
 export class ProductsModule {}

@@ -16,7 +16,7 @@ export class ProductDetailsDto {
   })
   @IsOptional()
   @IsString()
-  summary?: string;
+  characteristics?: string;
 
   @ApiProperty({
     description: 'A list of the product’s features',
