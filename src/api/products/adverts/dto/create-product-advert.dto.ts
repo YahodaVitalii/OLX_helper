@@ -23,7 +23,7 @@ export class CreateProductAdvertDto {
     description: 'The description of the advertisement',
     example: 'A powerful laptop with great battery life.',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   description: string;
 }

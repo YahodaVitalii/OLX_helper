@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ProductService } from './products.service';
 import { ProductsController } from './products.controller';
 import { ProductFinancesModule } from './finances/product-finances.module';
@@ -9,6 +9,7 @@ import { ProductImagesModule } from './images/product-images.module';
 import { ProductRepository } from './products.repository';
 import { ProductServiceFactory } from './product.factory';
 import { LaptopsModule } from './product-types/laptops/laptops.module';
+import { DescriptionGeneratorModule } from '../../description-generator/description-generator.module';
 
 @Module({
   controllers: [ProductsController],
@@ -20,10 +21,12 @@ import { LaptopsModule } from './product-types/laptops/laptops.module';
   ],
   imports: [
     ProductFinancesModule,
-    ProductAdvertsModule,
+    forwardRef(() => ProductAdvertsModule),
+    forwardRef(() => DescriptionGeneratorModule),
     ProductDetailsModule,
     ProductImagesModule,
     LaptopsModule,
   ],
+  exports: [ProductService],
 })
 export class ProductsModule {}

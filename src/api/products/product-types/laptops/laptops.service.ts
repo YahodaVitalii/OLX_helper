@@ -4,8 +4,8 @@ import { UpdateLaptopDto } from './dto/update-laptop.dto';
 import { ProductServiceInterface } from '../../abstract-product-service.interface';
 import { Laptop } from '@prisma/client';
 import { LaptopsRepository } from './laptop.repository';
-import { CreateProductDto } from '../../dto/create-product.dto';
-import { UpdateProductDto } from '../../dto/update-product.dto';
+import { CreateProductDto } from '../../product-dto/create-product.dto';
+import { UpdateProductDto } from '../../product-dto/update-product.dto';
 
 @Injectable()
 export class LaptopsService implements ProductServiceInterface {

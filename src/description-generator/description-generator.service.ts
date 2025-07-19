@@ -1,25 +1,32 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Laptop, ProductDetails, ProductType } from '@prisma/client';
 import { ProductService } from '../api/products/products.service';
-import { ExtendedProduct } from '../api/products/product.type';
 import { DESCRIPTION_TEXTS } from './constants/description-texts';
+import { ReadProductDto } from '../api/products/product-dto/read-product.dto';
 
 @Injectable()
 export class DescriptionGeneratorService {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    @Inject(forwardRef(() => ProductService))
+    private readonly productService: ProductService,
+  ) {}
 
-  async generateDescription(productId: number): Promise<string> {
-    const product = await this.productService.findOne(productId);
-    const details = product.ProductDetails;
+  generateDescription(product: ReadProductDto): string {
+    const details = product.ProductDetails as ProductDetails;
     if (!details) {
       throw new Error('Product details not found');
     }
-    return this.buildDescription(details, product);
+    return this.ReadProductDto(details, product);
   }
 
-  private buildDescription(
+  private ReadProductDto(
     details: ProductDetails,
-    product: ExtendedProduct,
+    product: ReadProductDto,
   ): string {
     const lines: string[] = [];
     lines.push(DESCRIPTION_TEXTS.greeting);
@@ -42,14 +49,14 @@ export class DescriptionGeneratorService {
     return lines.join('\n');
   }
 
-  private generateCharacteristics(product: ExtendedProduct): string {
+  private generateCharacteristics(product: ReadProductDto): string {
     const type: ProductType = product.type;
 
     if (type === ProductType.OTHER) {
       if (!product.ProductDetails || !product.ProductDetails.characteristics) {
         throw new BadRequestException('Characteristics is empty');
       }
-      return product.ProductDetails.characteristics;
+      return product.ProductAdvert.description;
     } else if (type === ProductType.LAPTOP) {
       return this.generateLaptopDescription(product.Laptop as Laptop);
     } else {

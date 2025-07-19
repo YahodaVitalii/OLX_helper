@@ -69,7 +69,7 @@ model ProductAdvert {
   olxId                  Int?    @unique @map("olx_id")
   title                  String
   description            String
-  isDescriptionGenerated Boolean @default(true) @map("is_description_generated")
+  isDescriptionGenerated Boolean @default(false) @map("is_description_generated")
 
   @@map("product_adverts")
 }

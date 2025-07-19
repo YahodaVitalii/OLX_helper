@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product, ProductStatus, ProductType } from '@prisma/client';
 import { PrismaService } from '../../prisma.service';
-import { ExtendedProduct } from './product.type';
+import { ReadProductDto } from './product-dto/read-product.dto';
 
 @Injectable()
 export class ProductRepository {
@@ -40,7 +40,7 @@ export class ProductRepository {
 
     return !!product;
   }
-  async findAllByUserId(userId: number): Promise<ExtendedProduct[]> {
+  async findAllByUserId(userId: number): Promise<ReadProductDto[]> {
     return this.prisma.product.findMany({
       where: {
         userId,
@@ -58,7 +58,7 @@ export class ProductRepository {
     });
   }
 
-  async findOneById(id: number): Promise<ExtendedProduct> {
+  async findOneById(id: number): Promise<ReadProductDto> {
     const product = await this.prisma.product.findFirst({
       where: {
         id,

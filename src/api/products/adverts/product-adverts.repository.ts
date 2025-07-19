@@ -46,4 +46,10 @@ export class ProductAdvertRepository {
       data: productAdvert,
     });
   }
+  async updateDescription(id: number, description: string): Promise<ProductAdvert> {
+    return this.prisma.productAdvert.update({
+      where: { id },
+      data: { description },
+    });
+  }
 }

@@ -1,27 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProductRepository } from './products.repository';
 import { ProductAdvertService } from './adverts/product-adverts.service';
 import { ProductFinancesService } from './finances/product-finances.service';
 import { ProductDetailsService } from './details/product-details.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto } from './product-dto/create-product.dto';
 import { ProductStatus, ProductType } from '@prisma/client';
 import { ProductImagesService } from './images/product-images.service';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { UpdateProductDto } from './product-dto/update-product.dto';
 import { ProductServiceFactory } from './product.factory';
-import { ExtendedProduct } from './product.type';
+import { ReadProductDto } from './product-dto/read-product.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly productRepository: ProductRepository,
     private readonly productServiceFactory: ProductServiceFactory,
+    @Inject(forwardRef(() => ProductAdvertService))
     private readonly productAdvertService: ProductAdvertService,
     private readonly productFinanceService: ProductFinancesService,
     private readonly productDetailsService: ProductDetailsService,
     private readonly productImagesService: ProductImagesService,
   ) {}
 
-  async create(ProductDto: CreateProductDto): Promise<ExtendedProduct> {
+  async create(
+    ProductDto: CreateProductDto,
+    generateDescription: boolean,
+  ): Promise<ReadProductDto> {
     const {
       ProductAdvert,
       ProductDetails,
@@ -59,14 +68,23 @@ export class ProductService {
       await handler.create(product.id, ProductDto);
     }
 
-    return this.findOne(product.id);
+    const createdProduct = await this.findOne(product.id);
+
+    if (createdProduct.ProductAdvert) {
+      createdProduct.ProductAdvert.description =
+        await this.productAdvertService.generateDescription(
+          createdProduct,
+          generateDescription,
+        );
+    }
+    return createdProduct;
   }
 
-  async findAll(userId: number): Promise<ExtendedProduct[]> {
+  async findAll(userId: number): Promise<ReadProductDto[]> {
     return this.productRepository.findAllByUserId(userId);
   }
 
-  async findOne(id: number): Promise<ExtendedProduct> {
+  async findOne(id: number): Promise<ReadProductDto> {
     const product = await this.productRepository.findOneById(id);
 
     if (!product) {
@@ -79,7 +97,8 @@ export class ProductService {
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
-  ): Promise<ExtendedProduct> {
+    generateDescription: boolean,
+  ): Promise<ReadProductDto> {
     const { ProductAdvert, ProductDetails, ProductFinance, ...productData } =
       updateProductDto;
 
@@ -111,7 +130,16 @@ export class ProductService {
       await handler.update(id, updateProductDto);
     }
 
-    return this.findOne(id);
+    const updatedProduct = await this.findOne(id);
+
+    if (updatedProduct.ProductAdvert) {
+      updatedProduct.ProductAdvert.description =
+        await this.productAdvertService.generateDescription(
+          updatedProduct,
+          generateDescription,
+        );
+    }
+    return updatedProduct;
   }
 
   delete(id: number, deleteAdvert?: boolean) {

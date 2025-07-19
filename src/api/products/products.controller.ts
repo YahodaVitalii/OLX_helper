@@ -22,12 +22,12 @@ import {
 } from '@nestjs/swagger';
 
 import { ProductService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto } from './product-dto/create-product.dto';
 import { Auth } from '../auth/auth.decorator';
 import { RequestUserContext } from '../../types/req-user-context.interface';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { UpdateProductDto } from './product-dto/update-product.dto';
 import { OwnerGuard } from './product-owner.guard';
-import { UpdateProductStatusDto } from './dto/update-product-status.dto';
+import { UpdateProductStatusDto } from './product-dto/update-product-status.dto';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -40,12 +40,22 @@ export class ProductsController {
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({ status: 201, description: 'Product created successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiQuery({
+    name: 'generateDescription',
+    required: false,
+    type: Boolean,
+    description: 'Whether to generate a description automatically',
+  })
   create(
     @Body() createProductDto: CreateProductDto,
     @Req() req: RequestUserContext,
+    @Query('generateDescription', ParseBoolPipe) generateDescription?: boolean,
   ) {
     const userId = req.user.userId;
-    return this.productsService.create({ ...createProductDto, userId });
+    return this.productsService.create(
+      { ...createProductDto, userId },
+      generateDescription ?? false,
+    );
   }
 
   @Get()
@@ -81,8 +91,22 @@ export class ProductsController {
     status: 403,
     description: 'Forbidden. Not owner of the product.',
   })
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  @ApiQuery({
+    name: 'generateDescription',
+    required: false,
+    type: Boolean,
+    description: 'Whether to generate a description automatically',
+  })
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @Query('generateDescription', ParseBoolPipe) generateDescription?: boolean,
+  ) {
+    return this.productsService.update(
+      +id,
+      updateProductDto,
+      generateDescription ?? false,
+    );
   }
   @Patch(':id/status')
   @UseGuards(OwnerGuard)

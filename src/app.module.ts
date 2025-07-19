@@ -5,6 +5,7 @@ import { AuthModule } from './api/auth/auth.module';
 import { ProductsModule } from './api/products/products.module';
 import { LaptopsModule } from './api/products/product-types/laptops/laptops.module';
 import * as process from 'node:process';
+import { DescriptionGeneratorModule } from './description-generator/description-generator.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import * as process from 'node:process';
     AuthModule,
     ProductsModule,
     LaptopsModule,
+    DescriptionGeneratorModule,
   ],
 })
 export class AppModule {}
