@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProductStatus, ProductType } from '@prisma/client';
+import { ReadProductDetailsDto } from '../details/dto/read-product-details.dto';
+import { ReadProductAdvertDto } from '../adverts/dto/read-product-advert.dto';
 
 export class ReadProductDto {
   @ApiProperty()
@@ -27,14 +29,14 @@ export class ReadProductDto {
   userId?: number | null;
 
   @ApiProperty({ description: 'Product Advert', type: Object, required: false })
-  ProductAdvert?: any;
+  ProductAdvert?: ReadProductAdvertDto | null;
 
   @ApiProperty({
     description: 'Product Details',
     type: Object,
     required: false,
   })
-  ProductDetails?: any;
+  ProductDetails?: ReadProductDetailsDto | null;
 
   @ApiProperty({
     description: 'Product Finance',

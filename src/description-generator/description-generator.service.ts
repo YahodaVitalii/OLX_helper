@@ -56,6 +56,9 @@ export class DescriptionGeneratorService {
       if (!product.ProductDetails || !product.ProductDetails.characteristics) {
         throw new BadRequestException('Characteristics is empty');
       }
+      if (!product.ProductAdvert) {
+        throw new BadRequestException('ProductAdvert is empty');
+      }
       return product.ProductAdvert.description;
     } else if (type === ProductType.LAPTOP) {
       return this.generateLaptopDescription(product.Laptop as Laptop);

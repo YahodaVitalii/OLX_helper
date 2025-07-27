@@ -70,10 +70,10 @@ export class ProductAdvertService {
     const generatedDescription =
       this.descriptionGeneratorService.generateDescription(product);
 
-    await this.productAdvertRepository.updateDescription(
-      product.ProductAdvert.id,
-      generatedDescription,
-    );
+    await this.productAdvertRepository.update(product.ProductAdvert.id, {
+      description: generatedDescription,
+      isDescriptionGenerated: true,
+    });
 
     return generatedDescription;
   }

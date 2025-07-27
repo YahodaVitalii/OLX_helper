@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProductAdvertDto {
   @ApiProperty({
@@ -35,4 +35,12 @@ export class UpdateProductAdvertDto {
   @IsOptional()
   @IsString()
   description?: string;
+  @ApiProperty({
+    description: 'Whether the description was generated automatically',
+    example: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isDescriptionGenerated?: boolean;
 }

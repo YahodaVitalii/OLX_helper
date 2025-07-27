@@ -70,13 +70,14 @@ export class ProductService {
 
     const createdProduct = await this.findOne(product.id);
 
-    if (createdProduct.ProductAdvert) {
-      createdProduct.ProductAdvert.description =
-        await this.productAdvertService.generateDescription(
-          createdProduct,
-          generateDescription,
-        );
-    }
+    // if (createdProduct.ProductAdvert) {
+    //   createdProduct.ProductAdvert.description =
+    //     await this.productAdvertService.generateDescription(
+    //       createdProduct,
+    //       generateDescription,
+    //     );
+    // }
+    await this.assignGeneratedDescription(createdProduct, generateDescription);
     return createdProduct;
   }
 
@@ -132,13 +133,8 @@ export class ProductService {
 
     const updatedProduct = await this.findOne(id);
 
-    if (updatedProduct.ProductAdvert) {
-      updatedProduct.ProductAdvert.description =
-        await this.productAdvertService.generateDescription(
-          updatedProduct,
-          generateDescription,
-        );
-    }
+    await this.assignGeneratedDescription(updatedProduct, generateDescription);
+
     return updatedProduct;
   }
 
@@ -148,5 +144,19 @@ export class ProductService {
 
   async updateStatus(id: number, status: ProductStatus) {
     return this.productRepository.updateStatus(id, status);
+  }
+
+  private async assignGeneratedDescription(
+    product: ReadProductDto,
+    generateDescription: boolean,
+  ): Promise<void> {
+    if (product.ProductAdvert) {
+      product.ProductAdvert.description =
+        await this.productAdvertService.generateDescription(
+          product,
+          generateDescription,
+        );
+      product.ProductAdvert.isDescriptionGenerated = true;
+    }
   }
 }

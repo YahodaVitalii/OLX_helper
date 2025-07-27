@@ -44,9 +44,6 @@ export class ProductRepository {
     return this.prisma.product.findMany({
       where: {
         userId,
-        Laptop: {
-          isNot: null,
-        },
       },
       include: {
         ProductAdvert: true,
@@ -62,9 +59,6 @@ export class ProductRepository {
     const product = await this.prisma.product.findFirst({
       where: {
         id,
-        Laptop: {
-          isNot: null,
-        },
       },
       include: {
         ProductAdvert: true,
