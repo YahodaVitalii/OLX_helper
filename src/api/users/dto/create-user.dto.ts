@@ -28,7 +28,7 @@ export class CreateUserDto {
 
   @ApiProperty({ example: '+1234567890', description: 'Phone number' })
   @IsString({ message: 'Must be a string' })
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }: { value: string }) => value.trim())
   @IsNotEmpty()
   readonly phoneNumber: string;
 

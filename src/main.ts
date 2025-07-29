@@ -25,4 +25,7 @@ async function bootstrap() {
     console.log(`Server listening on http://localhost:${PORT}`),
   );
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Bootstrap failed:', err);
+  process.exit(1);
+});
