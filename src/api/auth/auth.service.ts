@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { ReadUserDto } from '../users/dto/read-user.dto';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -12,16 +13,20 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<any> {
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<ReadUserDto | null> {
     const user = await this.usersService.getUserByLogin(username);
+
     if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
+      return plainToInstance(ReadUserDto, user);
     }
+
     return null;
   }
 
-  async login(loginData: LoginUserDto): Promise<{ access_token: string }> {
+  async login(loginData: LoginUserDto) {
     const user: ReadUserDto | null = await this.validateUser(
       loginData.username,
       loginData.password,
