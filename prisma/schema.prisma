@@ -90,8 +90,13 @@ model Image {
   id        Int     @id @default(autoincrement())
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int     @map("product_id")
-  url       String
 
+  url       String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, order])
   @@map("images")
 }
 

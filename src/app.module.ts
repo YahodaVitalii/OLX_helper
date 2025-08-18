@@ -6,6 +6,7 @@ import { ProductsModule } from './api/products/products.module';
 import { LaptopsModule } from './api/products/product-types/laptops/laptops.module';
 import * as process from 'node:process';
 import { DescriptionGeneratorModule } from './description-generator/description-generator.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DescriptionGeneratorModule } from './description-generator/description-
     ProductsModule,
     LaptopsModule,
     DescriptionGeneratorModule,
+    S3Module,
   ],
 })
 export class AppModule {}
