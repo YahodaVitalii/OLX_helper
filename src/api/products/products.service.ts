@@ -13,6 +13,7 @@ import { ProductStatus, ProductType } from '@prisma/client';
 import { UpdateProductDto } from './product-dto/update-product.dto';
 import { ProductServiceFactory } from './product.factory';
 import { ReadProductDto } from './product-dto/read-product.dto';
+import { ProductImagesService } from './images/product-images.service';
 
 @Injectable()
 export class ProductService {
@@ -23,6 +24,7 @@ export class ProductService {
     private readonly productAdvertService: ProductAdvertService,
     private readonly productFinanceService: ProductFinancesService,
     private readonly productDetailsService: ProductDetailsService,
+    private readonly productImagesService: ProductImagesService,
   ) {}
 
   async create(
@@ -119,7 +121,13 @@ export class ProductService {
     return updatedProduct;
   }
 
-  delete(id: number, deleteAdvert?: boolean) {
+  async delete(id: number, deleteAdvert?: boolean) {
+    if (!deleteAdvert) {
+      console.log(
+        `Add deleting advert actions after connecting with olx module`,
+      );
+    }
+    await this.productImagesService.deleteImagesByProductId(id);
     return this.productRepository.delete(id);
   }
 

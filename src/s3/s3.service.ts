@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   PutObjectCommandInput,
   PutObjectCommandOutput,
@@ -11,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 export class S3Service {
   private region: string;
   private s3: S3Client;
+  private bucket: string;
 
   constructor(private configService: ConfigService) {
     const accessKeyId = this.configService.get<string>('S3_ACCESS_KEY');
@@ -28,13 +32,17 @@ export class S3Service {
         secretAccessKey,
       },
     });
+    const bucket = this.configService.get<string>('S3_BUCKET');
+    if (!bucket) {
+      throw new Error('S3_BUCKET is not defined in config!');
+    }
+    this.bucket = bucket;
   }
 
   async uploadFile(file: Express.Multer.File, key: string): Promise<string> {
-    const bucket = this.configService.get<string>('S3_BUCKET');
     const input: PutObjectCommandInput = {
       Body: file.buffer,
-      Bucket: bucket,
+      Bucket: this.bucket,
       Key: key,
       ContentType: file.mimetype,
       ACL: 'public-read',
@@ -45,12 +53,49 @@ export class S3Service {
         new PutObjectCommand(input),
       );
       if (response.$metadata.httpStatusCode === 200) {
-        return `https://${bucket}.s3.${this.region}.amazonaws.com/${key}`;
+        return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
       }
       throw new Error('Image not saved in s3!');
     } catch (err) {
       console.log('Cannot save file to s3,', err);
       throw err;
     }
+  }
+  async deleteFile(urlOrKey: string) {
+    const key = urlOrKey.replace(/^https?:\/\/[^/]+\//, '');
+
+    await this.s3.send(
+      new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      }),
+    );
+  }
+
+  async deleteFolder(prefix: string) {
+    let continuationToken: string | undefined;
+
+    do {
+      const listResponse = await this.s3.send(
+        new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      if (!listResponse.Contents?.length) break;
+
+      await this.s3.send(
+        new DeleteObjectsCommand({
+          Bucket: this.bucket,
+          Delete: {
+            Objects: listResponse.Contents.map((obj) => ({ Key: obj.Key! })),
+          },
+        }),
+      );
+
+      continuationToken = listResponse.NextContinuationToken;
+    } while (continuationToken);
   }
 }

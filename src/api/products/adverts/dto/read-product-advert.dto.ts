@@ -5,7 +5,7 @@ export class ReadProductAdvertDto {
   id: number;
 
   @ApiProperty({ example: 15, description: 'Product ID' })
-  productId: number;
+  productId: number | null;
 
   @ApiProperty({
     example: 123456789,
