@@ -78,12 +78,26 @@ export class ProductImagesRepository {
     }
     return image;
   }
+
+  async countManyByProduct(
+    imageIds: number[],
+    productId: number,
+  ): Promise<number> {
+    return this.prisma.image.count({
+      where: {
+        id: { in: imageIds },
+        productId,
+      },
+    });
+  }
+
   async deleteByProductId(productId: number): Promise<number> {
     const result = await this.prisma.image.deleteMany({
       where: { productId },
     });
     return result.count;
   }
+
   async deleteById(id: number): Promise<{ message: string }> {
     await this.prisma.image.delete({ where: { id } });
     return { message: `Image ${id} deleted successfully` };

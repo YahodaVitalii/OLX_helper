@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -22,10 +23,12 @@ import {
 } from '@nestjs/swagger';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Multer } from 'multer';
+import { ProductImageOwnershipGuard } from './guards/product-image-ownership.guard';
 
 @ApiTags('Product Images')
 @Controller('products/:productId/images')
 @Auth()
+@UseGuards(ProductImageOwnershipGuard)
 export class ProductImagesController {
   constructor(private readonly productImagesService: ProductImagesService) {}
 
@@ -64,10 +67,7 @@ export class ProductImagesController {
     description: 'ID of the product',
   })
   @ApiParam({ name: 'imageId', type: Number, description: 'ID of the image' })
-  async deleteImage(
-    @Param('productId', ParseIntPipe) productId: number,
-    @Param('imageId', ParseIntPipe) imageId: number,
-  ) {
+  async deleteImage(@Param('imageId', ParseIntPipe) imageId: number) {
     return this.productImagesService.deleteImage(imageId);
   }
 
@@ -93,7 +93,6 @@ export class ProductImagesController {
   })
   @UseInterceptors(FilesInterceptor('image'))
   async replaceImages(
-    @Param('productId', ParseIntPipe) productId: number,
     @UploadedFiles() files: Express.Multer.File[],
     @Body('targetImageIds') targetImageIds: string,
   ) {
@@ -101,7 +100,7 @@ export class ProductImagesController {
       throw new BadRequestException('No files uploaded');
     }
 
-    const ids: number[] = JSON.parse(targetImageIds);
+    const ids: number[] = JSON.parse(targetImageIds) as number[];
 
     console.log(ids.length);
     console.log(files.length);

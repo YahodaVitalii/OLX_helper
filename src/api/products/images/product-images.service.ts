@@ -122,6 +122,22 @@ export class ProductImagesService {
     }
   }
 
+  async checkOwnership(imageId: number, productId: number): Promise<boolean>;
+  async checkOwnership(imageIds: number[], productId: number): Promise<boolean>;
+  async checkOwnership(
+    imageIds: number | number[],
+    productId: number,
+  ): Promise<boolean> {
+    const ids = Array.isArray(imageIds) ? imageIds : [imageIds];
+    if (!ids.length) return false;
+
+    const count = await this.imagesRepository.countManyByProduct(
+      ids,
+      productId,
+    );
+    return count === ids.length;
+  }
+
   async deleteImagesByProductId(productId: number) {
     const folderPath = `${PRODUCT_IMAGES_PREFIX}/${productId}/`;
     await this.s3Service.deleteFolder(folderPath);

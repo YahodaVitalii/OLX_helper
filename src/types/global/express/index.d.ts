@@ -1,4 +1,4 @@
-import { RequestUserContext } from '../../req-user-context.interface';
+import { RequestUserContext } from '../../Express/req-user-context.interface';
 
 declare global {
   namespace Express {
