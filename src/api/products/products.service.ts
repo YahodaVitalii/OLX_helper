@@ -10,10 +10,10 @@ import { ProductFinancesService } from './finances/product-finances.service';
 import { ProductDetailsService } from './details/product-details.service';
 import { CreateProductDto } from './product-dto/create-product.dto';
 import { ProductStatus, ProductType } from '@prisma/client';
-import { ProductImagesService } from './images/product-images.service';
 import { UpdateProductDto } from './product-dto/update-product.dto';
 import { ProductServiceFactory } from './product.factory';
 import { ReadProductDto } from './product-dto/read-product.dto';
+import { ProductImagesService } from './images/product-images.service';
 
 @Injectable()
 export class ProductService {
@@ -31,13 +31,8 @@ export class ProductService {
     ProductDto: CreateProductDto,
     generateDescription: boolean,
   ): Promise<ReadProductDto> {
-    const {
-      ProductAdvert,
-      ProductDetails,
-      ProductFinance,
-      images,
-      ...productData
-    } = ProductDto;
+    const { ProductAdvert, ProductDetails, ProductFinance, ...productData } =
+      ProductDto;
 
     const product = await this.productRepository.create(productData);
 
@@ -59,24 +54,12 @@ export class ProductService {
       await this.productFinanceService.create(product.id, ProductFinance);
     }
 
-    if (images) {
-      await this.productImagesService.addImages(product.id, images);
-    }
-
     if (productData.type !== ProductType.OTHER) {
       const handler = this.productServiceFactory.getHandler(productData.type);
       await handler.create(product.id, ProductDto);
     }
 
     const createdProduct = await this.findOne(product.id);
-
-    // if (createdProduct.ProductAdvert) {
-    //   createdProduct.ProductAdvert.description =
-    //     await this.productAdvertService.generateDescription(
-    //       createdProduct,
-    //       generateDescription,
-    //     );
-    // }
     await this.assignGeneratedDescription(createdProduct, generateDescription);
     return createdProduct;
   }
@@ -138,7 +121,13 @@ export class ProductService {
     return updatedProduct;
   }
 
-  delete(id: number, deleteAdvert?: boolean) {
+  async delete(id: number, deleteAdvert?: boolean) {
+    if (!deleteAdvert) {
+      console.log(
+        `Add deleting advert actions after connecting with olx module`,
+      );
+    }
+    await this.productImagesService.deleteImagesByProductId(id);
     return this.productRepository.delete(id);
   }
 

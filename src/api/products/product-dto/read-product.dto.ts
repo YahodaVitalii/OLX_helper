@@ -53,5 +53,5 @@ export class ReadProductDto {
   Laptop?: any;
 
   @ApiProperty({ description: 'Product images', type: [Object] })
-  images: any[];
+  images?: any[];
 }

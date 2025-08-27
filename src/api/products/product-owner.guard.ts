@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ProductRepository } from './products.repository';
-import { RequestWithUser } from '../../types/req-with-user.interface';
+import { RequestWithUser } from '../../types/Express/req-with-user.interface';
 
 @Injectable()
 export class OwnerGuard implements CanActivate {

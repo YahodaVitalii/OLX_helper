@@ -63,13 +63,13 @@ enum ProductType {
 }
 
 model ProductAdvert {
-  id                     Int     @id @default(autoincrement())
-  Product                Product @relation(fields: [productId], references: [id])
-  productId              Int     @unique @map("product_id")
-  olxId                  Int?    @unique @map("olx_id")
+  id                     Int      @id @default(autoincrement())
+  Product                Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId              Int?     @unique @map("product_id")
+  olxId                  Int?     @unique @map("olx_id")
   title                  String
   description            String
-  isDescriptionGenerated Boolean @default(false) @map("is_description_generated")
+  isDescriptionGenerated Boolean  @default(false) @map("is_description_generated")
 
   @@map("product_adverts")
 }
@@ -90,8 +90,13 @@ model Image {
   id        Int     @id @default(autoincrement())
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int     @map("product_id")
-  url       String
 
+  url       String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, order])
   @@map("images")
 }
 
@@ -115,8 +120,8 @@ enum ProductStatus {
 
 model ProductFinance {
   id              Int      @id @default(autoincrement())
-  Product         Product  @relation(fields: [productId], references: [id])
-  productId       Int      @unique @map("product_id")
+  Product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId       Int?     @unique @map("product_id")
   purchasePrice   Decimal  @map("purchase_price")
   sellingPrice    Decimal  @map("selling_price")
   additionalCosts Decimal  @map("additional_costs")
