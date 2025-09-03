@@ -126,12 +126,4 @@ export class CreateLaptopDto {
   @IsNotEmpty()
   @IsBoolean()
   isGamer: boolean;
-
-  // @ApiProperty({
-  //   description: 'Product ID associated with this laptop',
-  //   example: 123,
-  // })
-  // @IsNotEmpty()
-  // @IsNumber()
-  // productId: number;
 }

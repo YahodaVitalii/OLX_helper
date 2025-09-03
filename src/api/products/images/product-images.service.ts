@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ProductImagesRepository } from './product-images.repository';
 import { S3Service } from '../../../s3/s3.service';
-import PRODUCT_IMAGES_PREFIX from 'src/constants/s3.const';
+import PRODUCT_IMAGES_PREFIX from '../../../constants/s3.const';
 import { ProductImageDto } from './dto/product-image.dto';
 
 @Injectable()

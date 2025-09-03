@@ -6,6 +6,7 @@ import { Laptop } from '@prisma/client';
 import { LaptopsRepository } from './laptop.repository';
 import { CreateProductDto } from '../../product-dto/create-product.dto';
 import { UpdateProductDto } from '../../product-dto/update-product.dto';
+import { ReadLaptopDto } from './dto/read-laptop.dto';
 
 @Injectable()
 export class LaptopsService implements ProductServiceInterface {
@@ -19,7 +20,7 @@ export class LaptopsService implements ProductServiceInterface {
     return this.laptopsRepository.create(productId, Laptop as CreateLaptopDto);
   }
 
-  findOne(productId: number): Promise<Laptop> {
+  findOne(productId: number): Promise<ReadLaptopDto> {
     return this.laptopsRepository.findOne(productId);
   }
 

@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -12,7 +11,6 @@ import { Type } from 'class-transformer';
 import { ProductStatus, ProductType } from '@prisma/client';
 import { CreateProductAdvertDto } from '../adverts/dto/create-product-advert.dto';
 import { CreateProductFinanceDto } from '../finances/dto/create-product-finance.dto';
-import { CreateImageDto } from '../images/dto/create-images.dto';
 import { CreateLaptopDto } from '../product-types/laptops/dto/create-laptop.dto';
 import { ProductDetailsDto } from '../details/dto/product-details.dto';
 
@@ -84,15 +82,6 @@ export class CreateProductDto {
   @IsOptional()
   @Type(() => CreateProductFinanceDto)
   ProductFinance?: CreateProductFinanceDto;
-
-  @ApiProperty({
-    description: 'Array of images associated with the product',
-    type: [CreateImageDto],
-  })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateImageDto)
-  images?: CreateImageDto[];
 
   @ApiProperty({
     description: 'Laptop-specific details',

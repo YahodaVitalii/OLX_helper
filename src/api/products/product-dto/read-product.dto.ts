@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProductStatus, ProductType } from '@prisma/client';
 import { ReadProductDetailsDto } from '../details/dto/read-product-details.dto';
 import { ReadProductAdvertDto } from '../adverts/dto/read-product-advert.dto';
+import { ReadProductFinanceDto } from '../finances/dto/read-product-finances.dto';
 
 export class ReadProductDto {
   @ApiProperty()
@@ -43,7 +44,7 @@ export class ReadProductDto {
     type: Object,
     required: false,
   })
-  ProductFinance?: any;
+  ProductFinance?: ReadProductFinanceDto | null;
 
   @ApiProperty({
     description: 'Laptop specific fields',

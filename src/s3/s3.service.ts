@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
@@ -12,9 +16,9 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class S3Service {
-  private region: string;
+  readonly region: string;
   private s3: S3Client;
-  private bucket: string;
+  readonly bucket: string;
 
   constructor(private configService: ConfigService) {
     const accessKeyId = this.configService.get<string>('S3_ACCESS_KEY');
@@ -40,6 +44,10 @@ export class S3Service {
   }
 
   async uploadFile(file: Express.Multer.File, key: string): Promise<string> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('Invalid file uploaded');
+    }
+
     const input: PutObjectCommandInput = {
       Body: file.buffer,
       Bucket: this.bucket,
@@ -52,13 +60,16 @@ export class S3Service {
       const response: PutObjectCommandOutput = await this.s3.send(
         new PutObjectCommand(input),
       );
+
       if (response.$metadata.httpStatusCode === 200) {
         return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
       }
-      throw new Error('Image not saved in s3!');
+
+      throw new ServiceUnavailableException('Failed to upload file to S3');
     } catch (err) {
-      console.log('Cannot save file to s3,', err);
-      throw err;
+      throw new ServiceUnavailableException(
+        `Cannot save file to S3: ${err instanceof Error ? err.message : err}`,
+      );
     }
   }
   async deleteFile(urlOrKey: string) {

@@ -2,14 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class ProductDetailsDto {
-  // @ApiProperty({
-  //   description: 'The ID of the associated product',
-  //   example: 1,
-  // })
-  // @IsNotEmpty()
-  // @IsInt()
-  // productId: number;
-
   @ApiProperty({
     description: 'A summary or main section of the product details',
     example: 'Hello! Asus ROG G751J laptop for sale.',

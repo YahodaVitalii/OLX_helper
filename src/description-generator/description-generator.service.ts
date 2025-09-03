@@ -1,20 +1,11 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Laptop, ProductDetails, ProductType } from '@prisma/client';
-import { ProductService } from '../api/products/products.service';
 import { DESCRIPTION_TEXTS } from './constants/description-texts';
 import { ReadProductDto } from '../api/products/product-dto/read-product.dto';
 
 @Injectable()
 export class DescriptionGeneratorService {
-  constructor(
-    @Inject(forwardRef(() => ProductService))
-    private readonly productService: ProductService,
-  ) {}
+  constructor() {}
 
   generateDescription(product: ReadProductDto): string {
     const details = product.ProductDetails as ProductDetails;
