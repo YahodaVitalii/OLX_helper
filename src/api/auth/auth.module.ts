@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './jwt.strategy';
+import { OlxModule } from './olx/olx.module';
 import * as process from 'node:process';
 
 @Module({
@@ -15,6 +16,7 @@ import * as process from 'node:process';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
+    OlxModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
