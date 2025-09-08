@@ -7,6 +7,7 @@ import { LaptopsModule } from './api/products/product-types/laptops/laptops.modu
 import * as process from 'node:process';
 import { DescriptionGeneratorModule } from './description-generator/description-generator.module';
 import { S3Module } from './s3/s3.module';
+import { NovaPoshtaModule } from './api/nova-poshta/nova-poshta.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { S3Module } from './s3/s3.module';
     LaptopsModule,
     DescriptionGeneratorModule,
     S3Module,
+    NovaPoshtaModule,
   ],
 })
 export class AppModule {}
