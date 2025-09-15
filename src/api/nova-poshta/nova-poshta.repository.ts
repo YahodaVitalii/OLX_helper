@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { ReadNovaPoshtaSettingsDto } from './dto/read-nova-poshta-settings.dto';
+import { UpsertNovaPoshtaSettingsDto } from './dto/upsert-nova-poshta-settings.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class NovaPoshtaRepository {
@@ -17,6 +19,16 @@ export class NovaPoshtaRepository {
       );
     }
 
-    return settings as ReadNovaPoshtaSettingsDto;
+    return plainToInstance(ReadNovaPoshtaSettingsDto, settings);
+  }
+  async upsertUserSettings(userId: number, data: UpsertNovaPoshtaSettingsDto) {
+    return this.prisma.novaPoshtaSettings.upsert({
+      where: { userId },
+      update: data,
+      create: {
+        userId,
+        ...data,
+      },
+    });
   }
 }

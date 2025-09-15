@@ -6,11 +6,11 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersRepository } from './users.repository';
 import { User } from '@prisma/client';
-import { hashPassword } from '../../utils/hashPassword';
+import { hashPassword } from '../../utils/password/hashPassword';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ReadUserDto } from './dto/read-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { comparePassword } from '../../utils/comparePassword';
+import { comparePassword } from '../../utils/password/comparePassword';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()

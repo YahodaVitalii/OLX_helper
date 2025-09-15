@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Req, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Get,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
 import { NovaPoshtaService } from './nova-poshta.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Auth } from '../auth/auth.decorator';
@@ -8,6 +16,7 @@ import { CreateNovaPoshtaSettingsDto } from './dto/create-nova-poshta-settings.d
 @ApiTags('Nova Poshta Settings')
 @Controller('nova-poshta')
 @Auth()
+@UseInterceptors(ClassSerializerInterceptor)
 export class NovaPoshtaController {
   constructor(private readonly novaPoshtaService: NovaPoshtaService) {}
 

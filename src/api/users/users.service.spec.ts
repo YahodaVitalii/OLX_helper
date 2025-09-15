@@ -5,8 +5,8 @@ import { UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import * as hashUtils from '../../utils/hashPassword';
-import * as compareUtils from '../../utils/comparePassword';
+import * as hashUtils from '../../utils/password/hashPassword';
+import * as compareUtils from '../../utils/password/comparePassword';
 
 describe('UsersService', () => {
   let service: UsersService;

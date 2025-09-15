@@ -5,8 +5,12 @@ import {
 } from '@nestjs/common';
 import { NovaPoshtaRepository } from './nova-poshta.repository';
 import { CreateNovaPoshtaSettingsDto } from './dto/create-nova-poshta-settings.dto';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { ConfigService } from '@nestjs/config';
+import { plainToInstance } from 'class-transformer';
+import { ReadNovaPoshtaSettingsDto } from './dto/read-nova-poshta-settings.dto';
+import { NovaPoshtaCounterpartyResponse } from './ interfaces/nova-poshta-counterparty-response.interface';
+import { NovaPoshtaCityResponse } from './ interfaces/nova-poshta-city-response.interface';
 
 @Injectable()
 export class NovaPoshtaService {
@@ -26,83 +30,78 @@ export class NovaPoshtaService {
     const senderRef = await this.getSenderRef(dto.apiKey);
     const cityRef = await this.getCityRef(dto.apiKey, dto.cityName);
 
-    // Save in DB
-    return this.prisma.novaPoshtaSettings.upsert({
-      where: { userId },
-      update: {
-        apiKey: dto.apiKey,
-        senderRef,
-        cityRef,
-      },
-      create: {
-        userId,
-        apiKey: dto.apiKey,
-        senderRef,
-        cityRef,
-      },
+    const savedSettings = this.novaPoshtaRepository.upsertUserSettings(userId, {
+      apiKey: dto.apiKey,
+      senderRef,
+      cityRef,
     });
+    return plainToInstance(ReadNovaPoshtaSettingsDto, savedSettings);
   }
 
-  /**
-   * Fetch senderRef from Nova Poshta API
-   */
   private async getSenderRef(apiKey: string): Promise<string> {
-    try {
-      const response = await axios.post(this.NOVA_POSHTA_API_URL, {
-        apiKey,
-        modelName: 'Counterparty',
-        calledMethod: 'getCounterparties',
-        methodProperties: {
-          CounterpartyProperty: 'Sender',
-          Page: '1',
-        },
-      });
+    const requestBody = {
+      apiKey,
+      modelName: 'Counterparty',
+      calledMethod: 'getCounterparties',
+      methodProperties: {
+        CounterpartyProperty: 'Sender',
+        Page: '1',
+      },
+    };
 
-      if (!response.data?.success || !response.data.data?.length) {
-        throw new BadRequestException(
-          'Invalid Nova Poshta API key or sender not found',
-        );
-      }
-
-      return response.data.data[0].Ref;
-    } catch (error) {
-      console.error(
-        'Error fetching senderRef:',
-        error.response?.data || error.message,
+    const response =
+      await this.safeNovaPoshtaCall<NovaPoshtaCounterpartyResponse>(
+        requestBody,
       );
-      throw new InternalServerErrorException(
-        'Failed to fetch senderRef from Nova Poshta',
+
+    if (!response.success || !response.data?.length) {
+      throw new BadRequestException(
+        'Invalid Nova Poshta API key or sender not found',
       );
     }
+
+    return response.data[0].Ref;
   }
 
-  /**
-   * Fetch cityRef by city name
-   */
   private async getCityRef(apiKey: string, cityName: string): Promise<string> {
+    const requestBody = {
+      apiKey,
+      modelName: 'Address',
+      calledMethod: 'getCities',
+      methodProperties: {
+        FindByString: cityName,
+      },
+    };
+
+    const response =
+      await this.safeNovaPoshtaCall<NovaPoshtaCityResponse>(requestBody);
+
+    if (!response.success || !response.data?.length) {
+      throw new BadRequestException('City not found in Nova Poshta');
+    }
+
+    return response.data[0].Ref;
+  }
+
+  private async safeNovaPoshtaCall<T>(requestBody: unknown): Promise<T> {
     try {
-      const response = await axios.post(this.NOVA_POSHTA_API_URL, {
-        apiKey,
-        modelName: 'Address',
-        calledMethod: 'getCities',
-        methodProperties: {
-          FindByString: cityName,
-        },
-      });
-
-      if (!response.data?.success || !response.data.data?.length) {
-        throw new BadRequestException('City not found in Nova Poshta');
+      const response: AxiosResponse<T> = await axios.post(
+        this.NOVA_POSHTA_API_URL,
+        requestBody,
+      );
+      return response.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          'Nova Poshta API error:',
+          error.response?.data || error.message,
+        );
+      } else if (error instanceof Error) {
+        console.error('Nova Poshta API error:', error.message);
+      } else {
+        console.error('Nova Poshta API error:', error);
       }
-
-      return response.data.data[0].Ref;
-    } catch (error) {
-      console.error(
-        'Error fetching cityRef:',
-        error.response?.data || error.message,
-      );
-      throw new InternalServerErrorException(
-        'Failed to fetch cityRef from Nova Poshta',
-      );
+      throw new InternalServerErrorException('Nova Poshta request failed');
     }
   }
 }

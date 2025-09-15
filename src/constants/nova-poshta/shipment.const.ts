@@ -1,0 +1,5 @@
+export const DEFAULT_NOVA_POSHTA_VALUES = {
+  NEW_ADDRESS: '1',
+  SEATS_AMOUNT: '1',
+  DEFAULT_WEIGHT: '1',
+};

@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 
 export class ReadNovaPoshtaSettingsDto {
   @ApiProperty({
@@ -13,10 +14,8 @@ export class ReadNovaPoshtaSettingsDto {
   })
   userId: number;
 
-  @ApiProperty({
-    example: '2e9c62f73f7b6c64d97c0e36abcd1234',
-    description: 'Personal Nova Poshta API key for the user',
-  })
+  @ApiHideProperty()
+  @Exclude()
   apiKey: string;
 
   @ApiProperty({

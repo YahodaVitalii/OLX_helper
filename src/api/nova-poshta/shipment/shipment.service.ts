@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { NovaPoshtaService } from '../nova-poshta.service';
 import { ReadNovaPoshtaSettingsDto } from '../dto/read-nova-poshta-settings.dto';
 import { ReadProductDto } from '../../products/product-dto/read-product.dto';
+import { NovaPoshtaInternetDocumentPayload } from './interface/nova-poshta-internet-document.interface';
 
 @Injectable()
 export class ShipmentService {
@@ -70,7 +71,11 @@ export class ShipmentService {
     npSettings: ReadNovaPoshtaSettingsDto,
     product: ReadProductDto,
     dto: CreateShipmentDto,
-  ) {
+  ): NovaPoshtaInternetDocumentPayload {
+    if (!npSettings.senderRef || !npSettings.cityRef || !npSettings.apiKey) {
+      throw new BadRequestException('Invalid Nova Poshta settings');
+    }
+
     return {
       apiKey: npSettings.apiKey,
       modelName: 'InternetDocument',
@@ -80,16 +85,18 @@ export class ShipmentService {
         PayerType: 'Sender',
         PaymentMethod: 'Cash',
         CargoType: 'Parcel',
-        Weight: '2',
+        Weight: product.weight?.toString() ?? '1',
         ServiceType: 'WarehouseWarehouse',
         SeatsAmount: '1',
-        Description: product.name,
-        Cost: 1000,
+        Description: product.name || 'No description',
+
+        Cost: product.ProductFinance?.sellingPrice ?? 0,
+
         CitySender: npSettings.cityRef,
         Sender: npSettings.senderRef,
-        SenderAddress: '<sender_address_ref>',
-        ContactSender: '<sender_contact_ref>',
-        SendersPhone: '+380987654321',
+        SenderAddress: npSettings.,
+        ContactSender: npSettings.,
+        SendersPhone: npSettings.senderPhone,
         RecipientCity: dto.recipientCityRef,
         RecipientAddress: dto.recipientAddressRef,
         RecipientName: dto.recipientName,
@@ -98,6 +105,7 @@ export class ShipmentService {
       },
     };
   }
+
 
   /**
    * Send request to Nova Poshta API and return TTN
