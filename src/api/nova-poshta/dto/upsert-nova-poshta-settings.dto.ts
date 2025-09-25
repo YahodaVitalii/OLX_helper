@@ -9,4 +9,10 @@ export class UpsertNovaPoshtaSettingsDto {
 
   @IsString()
   cityRef: string;
+
+  @IsString()
+  senderAddressRef: string;
+
+  @IsString()
+  contactPersonRef: string;
 }

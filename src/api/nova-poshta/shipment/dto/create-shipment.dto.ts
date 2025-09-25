@@ -40,4 +40,11 @@ export class CreateShipmentDto {
   @IsString()
   @IsNotEmpty()
   recipientName: string;
+  @ApiProperty({
+    example: 3.0,
+    description: 'Total shipment weight in kilograms',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  weight: number;
 }

@@ -20,7 +20,7 @@ export class ReadNovaPoshtaSettingsDto {
 
   @ApiProperty({
     example: 'db5c88f3-067a-11e5-ad08-005056801333',
-    description: 'Nova Poshta unique reference for the sender',
+    description: 'Nova Poshta unique reference for the sender (account)',
   })
   senderRef: string;
 
@@ -29,4 +29,18 @@ export class ReadNovaPoshtaSettingsDto {
     description: 'Nova Poshta unique reference for the sender’s city',
   })
   cityRef: string;
+
+  @ApiProperty({
+    example: '0d1b5f20-ff48-11e9-8c8f-00505601005a',
+    description:
+      'Nova Poshta unique reference for the sender’s warehouse address',
+  })
+  senderAddressRef: string;
+
+  @ApiProperty({
+    example: 'f7d1b5a0-9b8d-11e9-8c8f-00505601005a',
+    description:
+      'Nova Poshta unique reference for the contact person of the sender',
+  })
+  contactPersonRef: string;
 }

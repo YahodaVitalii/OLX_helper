@@ -12,6 +12,8 @@ import { NovaPoshtaService } from '../nova-poshta.service';
 import { ReadNovaPoshtaSettingsDto } from '../dto/read-nova-poshta-settings.dto';
 import { ReadProductDto } from '../../products/product-dto/read-product.dto';
 import { NovaPoshtaInternetDocumentPayload } from './interface/nova-poshta-internet-document.interface';
+import { UsersService } from '../../users/users.service';
+import { ReadUserDto } from '../../users/dto/read-user.dto';
 
 @Injectable()
 export class ShipmentService {
@@ -21,6 +23,7 @@ export class ShipmentService {
     private readonly prisma: PrismaService,
     private readonly novaPoshtaService: NovaPoshtaService,
     private configService: ConfigService,
+    private userService:UsersService
   ) {
     this.NOVA_POSHTA_API_URL =
       this.configService.get<string>('NOVA_POSHTA_API')!;
@@ -34,8 +37,10 @@ export class ShipmentService {
     const npSettings =
       await this.novaPoshtaService.getNovaPoshtaSettings(userId);
 
+    const user = await this.userService.getUserById(userId);
+
     // 3. Build Nova Poshta payload
-    const payload = this.buildNovaPoshtaPayload(npSettings, product, dto);
+    const payload = this.buildNovaPoshtaPayload(npSettings, product, dto, user as ReadUserDto);
 
     // 4. Call Nova Poshta API
     const ttn = await this.callNovaPoshtaApi(payload);
@@ -70,7 +75,8 @@ export class ShipmentService {
   private buildNovaPoshtaPayload(
     npSettings: ReadNovaPoshtaSettingsDto,
     product: ReadProductDto,
-    dto: CreateShipmentDto,
+    shipmentDto: CreateShipmentDto,
+    user:ReadUserDto,
   ): NovaPoshtaInternetDocumentPayload {
     if (!npSettings.senderRef || !npSettings.cityRef || !npSettings.apiKey) {
       throw new BadRequestException('Invalid Nova Poshta settings');
@@ -85,7 +91,7 @@ export class ShipmentService {
         PayerType: 'Sender',
         PaymentMethod: 'Cash',
         CargoType: 'Parcel',
-        Weight: product.weight?.toString() ?? '1',
+        Weight: shipmentDto.weight?.toString() ?? '1',
         ServiceType: 'WarehouseWarehouse',
         SeatsAmount: '1',
         Description: product.name || 'No description',
@@ -94,14 +100,14 @@ export class ShipmentService {
 
         CitySender: npSettings.cityRef,
         Sender: npSettings.senderRef,
-        SenderAddress: npSettings.,
+        SenderAddress: user.,
         ContactSender: npSettings.,
-        SendersPhone: npSettings.senderPhone,
-        RecipientCity: dto.recipientCityRef,
-        RecipientAddress: dto.recipientAddressRef,
-        RecipientName: dto.recipientName,
+        SendersPhone: user.phoneNumber,
+        RecipientCity: shipmentDto.recipientCityRef,
+        RecipientAddress: shipmentDto.recipientAddressRef,
+        RecipientName: shipmentDto.recipientName,
         RecipientType: 'PrivatePerson',
-        RecipientsPhone: dto.recipientPhone,
+        RecipientsPhone: shipmentDto.recipientPhone,
       },
     };
   }
