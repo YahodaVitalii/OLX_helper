@@ -14,6 +14,7 @@ import { ReadProductDto } from '../../products/product-dto/read-product.dto';
 import { NovaPoshtaInternetDocumentPayload } from './interface/nova-poshta-internet-document.interface';
 import { UsersService } from '../../users/users.service';
 import { ReadUserDto } from '../../users/dto/read-user.dto';
+import * as CONST from '../../../constants';
 
 @Injectable()
 export class ShipmentService {
@@ -23,7 +24,7 @@ export class ShipmentService {
     private readonly prisma: PrismaService,
     private readonly novaPoshtaService: NovaPoshtaService,
     private configService: ConfigService,
-    private userService:UsersService
+    private userService: UsersService,
   ) {
     this.NOVA_POSHTA_API_URL =
       this.configService.get<string>('NOVA_POSHTA_API')!;
@@ -40,7 +41,12 @@ export class ShipmentService {
     const user = await this.userService.getUserById(userId);
 
     // 3. Build Nova Poshta payload
-    const payload = this.buildNovaPoshtaPayload(npSettings, product, dto, user as ReadUserDto);
+    const payload = this.buildNovaPoshtaPayload(
+      npSettings,
+      product,
+      dto,
+      user as ReadUserDto,
+    );
 
     // 4. Call Nova Poshta API
     const ttn = await this.callNovaPoshtaApi(payload);
@@ -54,9 +60,6 @@ export class ShipmentService {
     };
   }
 
-  /**
-   * Validate that the product exists and belongs to the user
-   */
   private async validateProductOwnership(userId: number, productId: number) {
     const product = await this.prisma.product.findFirst({
       where: { id: productId, userId },
@@ -69,49 +72,49 @@ export class ShipmentService {
     return product;
   }
 
-  /**
-   * Build request payload for Nova Poshta API
-   */
   private buildNovaPoshtaPayload(
     npSettings: ReadNovaPoshtaSettingsDto,
     product: ReadProductDto,
     shipmentDto: CreateShipmentDto,
-    user:ReadUserDto,
+    user: ReadUserDto,
   ): NovaPoshtaInternetDocumentPayload {
     if (!npSettings.senderRef || !npSettings.cityRef || !npSettings.apiKey) {
       throw new BadRequestException('Invalid Nova Poshta settings');
     }
-
     return {
       apiKey: npSettings.apiKey,
-      modelName: 'InternetDocument',
-      calledMethod: 'save',
+      modelName: CONST.NOVA_POSHTA_MODEL_NAMES.INTERNET_DOCUMENT,
+      calledMethod: CONST.NOVA_POSHTA_METHODS.SAVE,
       methodProperties: {
-        NewAddress: '1',
-        PayerType: 'Sender',
-        PaymentMethod: 'Cash',
-        CargoType: 'Parcel',
-        Weight: shipmentDto.weight?.toString() ?? '1',
-        ServiceType: 'WarehouseWarehouse',
-        SeatsAmount: '1',
-        Description: product.name || 'No description',
+        NewAddress: CONST.NOVA_POSHTA_DEFAULTS.NEW_ADDRESS,
+        PayerType: CONST.NOVA_POSHTA_DEFAULTS.PAYER_TYPE,
+        PaymentMethod: CONST.NOVA_POSHTA_DEFAULTS.PAYMENT_METHOD,
+        CargoType: CONST.NOVA_POSHTA_DEFAULTS.CARGO_TYPE,
+        Weight:
+          shipmentDto.weight?.toString() ??
+          CONST.NOVA_POSHTA_DEFAULTS.DEFAULT_WEIGHT,
+        ServiceType: CONST.NOVA_POSHTA_DEFAULTS.SERVICE_TYPE,
+        SeatsAmount: CONST.NOVA_POSHTA_DEFAULTS.SEATS_AMOUNT,
+        Description:
+          product.name || CONST.NOVA_POSHTA_DEFAULTS.DEFAULT_DESCRIPTION,
 
-        Cost: product.ProductFinance?.sellingPrice ?? 0,
+        Cost: product.ProductFinance?.sellingPrice
+          ? Number(product.ProductFinance.sellingPrice)
+          : 0,
 
         CitySender: npSettings.cityRef,
         Sender: npSettings.senderRef,
-        SenderAddress: user.,
-        ContactSender: npSettings.,
+        SenderAddress: npSettings.senderAddressRef,
+        ContactSender: npSettings.contactPersonRef,
         SendersPhone: user.phoneNumber,
         RecipientCity: shipmentDto.recipientCityRef,
         RecipientAddress: shipmentDto.recipientAddressRef,
         RecipientName: shipmentDto.recipientName,
-        RecipientType: 'PrivatePerson',
+        RecipientType: CONST.NOVA_POSHTA_DEFAULTS.RECIPIENT_TYPE,
         RecipientsPhone: shipmentDto.recipientPhone,
       },
     };
   }
-
 
   /**
    * Send request to Nova Poshta API and return TTN

@@ -159,12 +159,14 @@ model Laptop {
 }
 
 model NovaPoshtaSettings {
-  id        Int    @id @default(autoincrement())
-  userId    Int    @unique @map("user_id")
-  apiKey    String @map("api_key")
-  senderRef String @map("sender_ref")
-  cityRef   String @map("city_ref")
-  User      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               Int    @id @default(autoincrement())
+  userId           Int    @unique @map("user_id")
+  apiKey           String @map("api_key")
+  senderRef        String @map("sender_ref")
+  cityRef          String @map("city_ref")
+  senderAddressRef String @map("sender_address_ref")
+  contactPersonRef String @map("contact_person_ref")
+  User             User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("nova_poshta_settings")
 }

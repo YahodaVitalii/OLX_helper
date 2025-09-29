@@ -11,10 +11,13 @@ import { plainToInstance } from 'class-transformer';
 import { ReadNovaPoshtaSettingsDto } from './dto/read-nova-poshta-settings.dto';
 import { NovaPoshtaCounterpartyResponse } from './ interfaces/nova-poshta-counterparty-response.interface';
 import { NovaPoshtaCityResponse } from './ interfaces/nova-poshta-city-response.interface';
+import { NovaPoshtaContactPersonResponse } from './ interfaces/nova-poshta-contact-person-response.interface';
+import { NovaPoshtaWarehouseResponse } from './ interfaces/nova-poshta-warehouse-response.interface';
 
 @Injectable()
 export class NovaPoshtaService {
   private readonly NOVA_POSHTA_API_URL: string;
+
   constructor(
     private readonly novaPoshtaRepository: NovaPoshtaRepository,
     private configService: ConfigService,
@@ -26,18 +29,38 @@ export class NovaPoshtaService {
   async getNovaPoshtaSettings(userId: number) {
     return this.novaPoshtaRepository.getNovaPoshtaSettings(userId);
   }
-  async saveUserSettings(userId: number, dto: CreateNovaPoshtaSettingsDto) {
-    const senderRef = await this.getSenderRef(dto.apiKey);
-    const cityRef = await this.getCityRef(dto.apiKey, dto.cityName);
 
-    const savedSettings = this.novaPoshtaRepository.upsertUserSettings(userId, {
-      apiKey: dto.apiKey,
+  async saveUserSettings(userId: number, dto: CreateNovaPoshtaSettingsDto) {
+    // 1. Fetch Nova Poshta IDs
+    const senderRef = await this.getSenderRef(dto.apiKey);
+    const contactPersonRef = await this.getContactPersonRef(
+      dto.apiKey,
       senderRef,
+    );
+    const cityRef = await this.getCityRef(dto.apiKey, dto.cityName);
+    const senderAddressRef = await this.getSenderAddressRef(
+      dto.apiKey,
       cityRef,
-    });
+    );
+
+    // 2. Save everything into DB
+    const savedSettings = await this.novaPoshtaRepository.upsertUserSettings(
+      userId,
+      {
+        apiKey: dto.apiKey,
+        senderRef,
+        cityRef,
+        senderAddressRef,
+        contactPersonRef,
+      },
+    );
+
     return plainToInstance(ReadNovaPoshtaSettingsDto, savedSettings);
   }
 
+  /**
+   * Fetch Nova Poshta Sender Reference
+   */
   private async getSenderRef(apiKey: string): Promise<string> {
     const requestBody = {
       apiKey,
@@ -63,6 +86,38 @@ export class NovaPoshtaService {
     return response.data[0].Ref;
   }
 
+  /**
+   * Fetch Nova Poshta Contact Person Reference
+   */
+  private async getContactPersonRef(
+    apiKey: string,
+    senderRef: string,
+  ): Promise<string> {
+    const requestBody = {
+      apiKey,
+      modelName: 'Counterparty',
+      calledMethod: 'getCounterpartyContactPersons',
+      methodProperties: {
+        Ref: senderRef,
+        Page: '1',
+      },
+    };
+
+    const response =
+      await this.safeNovaPoshtaCall<NovaPoshtaContactPersonResponse>(
+        requestBody,
+      );
+
+    if (!response.success || !response.data?.length) {
+      throw new BadRequestException('No contact person found for sender');
+    }
+
+    return response.data[0].Ref;
+  }
+
+  /**
+   * Fetch City Reference
+   */
   private async getCityRef(apiKey: string, cityName: string): Promise<string> {
     const requestBody = {
       apiKey,
@@ -83,6 +138,33 @@ export class NovaPoshtaService {
     return response.data[0].Ref;
   }
 
+  /**
+   * Fetch Sender Address Reference (warehouse in that city)
+   */
+  private async getSenderAddressRef(
+    apiKey: string,
+    cityRef: string,
+  ): Promise<string> {
+    const requestBody = {
+      apiKey,
+      modelName: 'AddressGeneral',
+      calledMethod: 'getWarehouses',
+      methodProperties: {
+        CityRef: cityRef,
+      },
+    };
+
+    const response =
+      await this.safeNovaPoshtaCall<NovaPoshtaWarehouseResponse>(requestBody);
+
+    if (!response.success || !response.data?.length) {
+      throw new BadRequestException('No warehouses found in sender city');
+    }
+    return response.data[0].Ref;
+  }
+  /**
+   * Common safe API call
+   */
   private async safeNovaPoshtaCall<T>(requestBody: unknown): Promise<T> {
     try {
       const response: AxiosResponse<T> = await axios.post(
